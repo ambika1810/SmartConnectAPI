@@ -27,8 +27,7 @@ func configure(_ app: Application) async throws {
         ),
         as: .psql
     )
-
     app.migrations.add(CreateScan())
-
+    try await app.autoMigrate()
     try routes(app)
 }
