@@ -1,24 +1,34 @@
+
 import NIOSSL
 import Fluent
 import FluentPostgresDriver
 import Vapor
 
-/// configures your application
 func configure(_ app: Application) async throws {
-    // uncomment to serve files from /Public folder
-    // app.middleware.use(FileMiddleware(publicDirectory: app.directory.publicDirectory))
+    let databaseHost = Environment.get("DATABASE_HOST") ?? "localhost"
+    let databasePort = Environment.get("DATABASE_PORT").flatMap { Int($0) }
+        ?? SQLPostgresConfiguration.ianaPortNumber
+    let databaseUsername = Environment.get("DATABASE_USERNAME") ?? "ambikapatil"
+    let databasePassword = Environment.get("DATABASE_PASSWORD") ?? ""
+    let databaseName = Environment.get("DATABASE_NAME") ?? "vapor_database"
 
-    app.databases.use(DatabaseConfigurationFactory.postgres(configuration: .init(
-        hostname: Environment.get("DATABASE_HOST") ?? "localhost",
-        port: Environment.get("DATABASE_PORT").flatMap(Int.init(_:)) ?? SQLPostgresConfiguration.ianaPortNumber,
-        username: Environment.get("DATABASE_USERNAME") ?? "ambikapatil",
-        password: Environment.get("DATABASE_PASSWORD") ?? "",
-        database: Environment.get("DATABASE_NAME") ?? "vapor_database",
-        tls: .prefer(try .init(configuration: .clientDefault)))
-    ), as: .psql)
+    let postgresConfiguration = SQLPostgresConfiguration(
+        hostname: databaseHost,
+        port: databasePort,
+        username: databaseUsername,
+        password: databasePassword,
+        database: databaseName,
+        tls: .disable
+    )
 
+    app.databases.use(
+        DatabaseConfigurationFactory.postgres(
+            configuration: postgresConfiguration
+        ),
+        as: .psql
+    )
 
     app.migrations.add(CreateScan())
-    // register routes
+
     try routes(app)
 }
