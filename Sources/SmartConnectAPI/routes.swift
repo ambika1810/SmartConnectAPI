@@ -1,3 +1,4 @@
+
 import Fluent
 import Vapor
 
@@ -10,5 +11,5 @@ func routes(_ app: Application) throws {
         "Hello, world!"
     }
 
-    try app.register(collection: TodoController())
+    try app.register(collection: ScanController())
 }
